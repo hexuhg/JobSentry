@@ -1,0 +1,40 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login | JobSentry</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <main class="container auth-container">
+        <section class="card">
+            <h1>JobSentry Admin Login</h1>
+            <p>Sign in to manage company reviews and community reports.</p>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% for category, message in messages %}
+                    <p class="result-panel">{{ message }}</p>
+                {% endfor %}
+            {% endwith %}
+
+            <form method="POST" action="{{ url_for('admin_login') }}">
+                <label for="password">Admin password</label>
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    placeholder="Enter admin password"
+                    required
+                    autocomplete="current-password">
+
+                <button type="submit">Log In</button>
+            </form>
+
+            <p><a href="{{ url_for('home') }}">Back to Home</a></p>
+        </section>
+    </main>
+</body>
+</html>

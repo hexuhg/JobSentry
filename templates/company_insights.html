@@ -1,0 +1,237 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Insights | JobSentry</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <nav class="main-nav">
+        <a class="nav-brand" href="{{ url_for('home') }}">
+            <span class="brand-icon" aria-hidden="true">🛡</span>
+            <span class="brand-text">
+                <span class="brand-name">JobSentry</span>
+                <span class="brand-tagline">Spot Job Scams. Apply with Confidence.</span>
+            </span>
+        </a>
+
+        <div class="nav-links">
+            <a href="{{ url_for('home') }}">Home</a>
+            <a href="{{ url_for('company_insights') }}">Company Insights</a>
+            <a href="{{ url_for('reviews') }}">Company Reviews</a>
+            <a href="{{ url_for('report_job') }}">Report a Job</a>
+            <a href="{{ url_for('dashboard') }}">Student Dashboard</a>
+            <a href="{{ url_for('company_insights') }}">Company Insights</a>
+        </div>
+    </nav>
+
+    <main class="container company-insights-page">
+
+        <section class="hero company-insights-hero">
+            <span class="eyebrow">RESEARCH BEFORE YOU APPLY</span>
+            <h1>Company <span class="gradient-text">Insights</span></h1>
+            <p>
+                Explore workplace experiences, hiring feedback, and public
+                information before making your next career decision.
+            </p>
+
+            <form class="company-insights-search"
+                  action="{{ url_for('company_insights') }}"
+                  method="GET">
+                <label for="company-name">Search for a company</label>
+                <div class="company-insights-search-row">
+                    <input
+                        id="company-name"
+                        type="search"
+                        name="company"
+                        value="{{ company_name }}"
+                        placeholder="e.g. Google, Infosys, TCS"
+                        maxlength="120"
+                        required
+                    >
+                    <button type="submit">Explore Company</button>
+                </div>
+            </form>
+        </section>
+
+        {% if company_name %}
+        <section class="scanner-card company-profile-card">
+            <div class="company-profile-heading">
+                <div class="company-profile-icon" aria-hidden="true">🏢</div>
+                <div>
+                    <span class="admin-section-label">COMPANY PROFILE</span>
+                    <h2>{{ company_name }}</h2>
+                    <p>Community experiences and external research links</p>
+                </div>
+            </div>
+
+            <div class="company-insights-stats">
+                <div class="company-insights-stat">
+                    <span>Community rating</span>
+                    <strong>
+                        {% if review_count > 0 %}
+                            {{ "%.1f"|format(average_rating) }}/5
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </strong>
+                </div>
+
+                <div class="company-insights-stat">
+                    <span>Approved reviews</span>
+                    <strong>{{ review_count }}</strong>
+                </div>
+            </div>
+
+            <div class="company-insights-section">
+                <h3>Community Experiences</h3>
+                <p class="company-insights-note">
+                    These reviews were submitted to JobSentry and approved
+                    by our administrator. They represent individual
+                    experiences, not independently verified company facts.
+                </p>
+
+                {% if reviews %}
+                    <div class="company-insights-review-list">
+                        {% for item in reviews %}
+                        <article class="company-insights-review">
+                            <div class="company-insights-review-heading">
+                                <strong>{{ item.company_name }}</strong>
+                                <span class="admin-rating">
+                                    ★ {{ item.rating }}/5
+                                </span>
+                            </div>
+                            <p>{{ item.review }}</p>
+                            <small>Posted {{ item.created_at }}</small>
+                        </article>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="admin-empty-state">
+                        <span class="admin-empty-icon">i</span>
+                        <h3>No community reviews yet</h3>
+                        <p>
+                            No approved JobSentry reviews were found for
+                            this company. You can check public sources below
+                            or submit your own experience.
+                        </p>
+                    </div>
+                {% endif %}
+
+                <a class="company-insights-secondary-link"
+                   href="{{ url_for('reviews') }}">
+                    Read or submit community reviews →
+                </a>
+            </div>
+
+<div class="company-insights-section">
+    <h3>Public Company Information</h3>
+    <p class="company-insights-note">
+        Information retrieved from Wikidata. Some fields may be unavailable.
+    </p>
+
+    {% if company_info %}
+    <div class="company-insights-review">
+        {% if company_info.description %}
+        <p>{{ company_info.description }}</p>
+        {% endif %}
+
+        {% if company_info.website %}
+        <p>
+            <strong>Official website:</strong>
+            <a href="{{ company_info.website }}"
+               target="_blank" rel="noopener noreferrer">
+                {{ company_info.website }}
+            </a>
+        </p>
+        {% endif %}
+
+        {% if company_info.headquarters %}
+        <p>
+            <strong>Headquarters:</strong>
+            {{ company_info.headquarters }}
+        </p>
+        {% endif %}
+
+        {% if company_info.founded %}
+        <p>
+            <strong>Founded:</strong> {{ company_info.founded }}
+        </p>
+        {% endif %}
+
+        {% if company_info.industry %}
+        <p>
+            <strong>Industry:</strong> {{ company_info.industry }}
+        </p>
+        {% endif %}
+
+        <p class="company-insights-note">
+            Source:
+            <a href="{{ company_info.source_url }}"
+               target="_blank" rel="noopener noreferrer">
+                View Wikidata record ↗
+            </a>
+        </p>
+    </div>
+    {% else %}
+    <div class="admin-empty-state">
+        <h3>Public information unavailable</h3>
+        <p>
+            We couldn't find an exact company match in Wikidata, or the
+            service could not be reached. You can still use the external
+            research links below.
+        </p>
+    </div>
+    {% endif %}
+</div>
+
+            <div class="company-insights-section">
+                <h3>Explore Public Sources</h3>
+                <p class="company-insights-note">
+                    These links open external websites. Their ratings and
+                    reviews have not been imported or verified by JobSentry.
+                </p>
+
+                
+<div class="company-source-links">
+    <a href="https://www.google.com/search?q={{ (company_name ~ ' site:glassdoor.com/Reviews')|urlencode }}"
+       target="_blank" rel="noopener noreferrer">
+        Search Glassdoor ↗
+    </a>
+
+    <a href="https://www.google.com/search?q={{ (company_name ~ ' site:ambitionbox.com/reviews')|urlencode }}"
+       target="_blank" rel="noopener noreferrer">
+        Search AmbitionBox ↗
+    </a>
+
+    <a href="https://www.google.com/search?q={{ (company_name ~ ' employee reviews site:linkedin.com')|urlencode }}"
+       target="_blank" rel="noopener noreferrer">
+        Search LinkedIn ↗
+    </a>
+</div>
+
+
+                <p class="company-insights-note">
+                    Search for the company by name on these websites.
+                    These are general links, not company-specific search
+                    results or an automatic review feed.
+                </p>
+            </div>
+        </section>
+        {% else %}
+        <section class="company-insights-welcome">
+            <div class="company-insights-welcome-icon">⌕</div>
+            <h2>Know a company before you join</h2>
+            <p>
+                Search for a company to view its approved JobSentry
+                community reviews and find external research sources.
+            </p>
+        </section>
+        {% endif %}
+
+    </main>
+</body>
+</html>

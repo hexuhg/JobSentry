@@ -1,0 +1,227 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>JobSentry | Job Scam Detection</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+<nav class="main-nav">
+    <a class="nav-brand" href="{{ url_for('home') }}">
+        <span class="brand-icon" aria-hidden="true">🛡</span>
+        <span class="brand-text">
+            <span class="brand-name">JobSentry</span>
+            <span class="brand-tagline">Spot Job Scams. Apply with Confidence.</span>
+        </span>
+    </a>
+
+    <div class="nav-links">
+        <a href="{{ url_for('home') }}">Home</a>
+        <a href="{{ url_for('reviews') }}">Company Reviews</a>
+        <a href="{{ url_for('report_job') }}">Report a Job</a>
+        <a href="{{ url_for('dashboard') }}">Student Dashboard</a>
+        <a href="{{ url_for('admin_login') }}">Admin Login</a>
+        <a href="{{ url_for('company_insights') }}">Company Insights</a>
+    </div>
+</nav>
+
+<main class="container">
+
+    <span class="eyebrow">SMARTER JOB SEARCH. SAFER DECISIONS.</span>
+
+    <h1>Check a job posting before you trust it.</h1>
+
+    <p class="subtitle">
+        Review job descriptions for potential scam warning signs
+        and learn what to verify before sharing money or personal data.
+    </p>
+
+    <section class="scanner-card">
+        <form method="POST" action="/" enctype="multipart/form-data">
+
+            <label for="job-description">Paste your job description</label>
+
+            <textarea
+                id="job-description"
+                name="job_description"
+                placeholder="Paste the complete job description here..."
+                required
+            >{{ job_description }}</textarea>
+
+            <div class="image-upload">
+                <label for="job-image">Or upload a job-posting image</label>
+
+                <input
+                    type="file"
+                    id="job-image"
+                    name="job_image"
+                    accept="image/*"
+                    capture="environment"
+                >
+
+                <p class="helper">
+                    Select an image from your device, or use the camera
+                    on a supported mobile browser.
+                </p>
+            </div>
+
+            <p class="helper">
+                Tip: Include the salary, company details, and application
+                instructions if they are available.
+            </p>
+
+            <button type="submit">Analyze job posting &rarr;</button>
+        </form>
+    </section>
+
+    {% if error %}
+    <div class="safety-note" role="alert">
+        <strong>Unable to analyze:</strong>
+        <p>{{ error }}</p>
+    </div>
+    {% endif %}
+
+    {% if extracted_text %}
+    <section class="scanner-card">
+        <h2>Text extracted from your image</h2>
+        <p>Check the extracted text before relying on the result.</p>
+        <pre style="white-space: pre-wrap;">{{ extracted_text }}</pre>
+    </section>
+    {% endif %}
+
+    {% if result %}
+    <section class="safety-note" role="status">
+        <h2>{{ result.title }}</h2>
+        <p>{{ result.message }}</p>
+
+        <p>
+            <strong>Classification:</strong> {{ result.category }}
+        </p>
+
+        {% if result.score is not none %}
+        <p>
+            <strong>Fraud-class model score:</strong>
+            {{ result.score }}%
+        </p>
+        {% endif %}
+
+        <p>
+            <small>
+                Experimental model output only. This score is not a
+                calibrated fraud probability and does not prove whether
+                a job is genuine or fraudulent.
+            </small>
+        </p>
+
+        <div class="explanation-panel">
+            <h3>🔎 Fraud Warning Signs</h3>
+
+            {% if result.warnings %}
+                {% for warning in result.warnings %}
+                <div class="warning-item">
+                    <h4>
+                        {% if warning.severity == "high" %}
+                            🚨
+                        {% else %}
+                            ⚠️
+                        {% endif %}
+                        {{ warning.name }}
+                    </h4>
+
+                    <p>{{ warning.explanation }}</p>
+
+                    <p>
+                        <strong>Recommended action:</strong>
+                        {{ warning.advice }}
+                    </p>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p>
+                    No warning phrases from our current rules were detected.
+                    This does not guarantee the job is legitimate.
+                </p>
+            {% endif %}
+        </div>
+
+        <div class="explanation-panel">
+            <h3>🏢 Company and Job Details</h3>
+
+            {% if result.missing_details %}
+                {% for detail in result.missing_details %}
+                <p>ℹ️ {{ detail }}</p>
+                {% endfor %}
+            {% else %}
+                <p>
+                    Basic company and job-detail keywords were detected.
+                    The company has not been independently verified.
+                </p>
+            {% endif %}
+        </div>
+
+        <div class="explanation-panel">
+            <h3>🛡️ Before You Apply</h3>
+
+            <ul class="safety-checklist">
+                {% for check in result.safety_checks %}
+                <li>{{ check }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="explanation-panel">
+            <h3>🔖 Save This Job</h3>
+            <p>Save this posting so you can review it later in your dashboard.</p>
+
+            <form method="POST" action="{{ url_for('save_job') }}">
+                <input
+                    type="hidden"
+                    name="job_title"
+                    value="{{ job_description.split('\n')[0][:150] }}"
+                >
+
+                <input
+                    type="hidden"
+                    name="job_description"
+                    value="{{ job_description }}"
+                >
+
+                <label for="saved_company_name">
+                    Company name (optional)
+                </label>
+
+                <input
+                    type="text"
+                    id="saved_company_name"
+                    name="company_name"
+                    maxlength="120"
+                    placeholder="Enter company name"
+                >
+
+                <button type="submit">Save Job</button>
+            </form>
+        </div>
+    </section>
+    {% endif %}
+
+    <div class="safety-note">
+        <strong>Stay cautious:</strong>
+        JobSentry provides risk indicators, not a guarantee that a
+        job is genuine or fraudulent. Never pay an employer to apply.
+    </div>
+
+</main>
+
+<footer>
+    JobSentry &copy; 2026 · Make informed decisions. Search safely.
+</footer>
+
+</body>
+</html>

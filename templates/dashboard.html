@@ -1,0 +1,356 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#07111f">
+
+    <title>Student Dashboard | JobSentry</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+<nav class="main-nav">
+    <a class="nav-brand" href="{{ url_for('home') }}">
+        <span class="brand-icon" aria-hidden="true">🛡</span>
+        <span class="brand-text">
+            <span class="brand-name">JobSentry</span>
+            <span class="brand-tagline">Spot Job Scams. Apply with Confidence.</span>
+        </span>
+    </a>
+
+    <div class="nav-links">
+        <a href="{{ url_for('home') }}">Home</a>
+        <a href="{{ url_for('reviews') }}">Company Reviews</a>
+        <a href="{{ url_for('report_job') }}">Report a Job</a>
+        <a href="{{ url_for('dashboard') }}" aria-current="page">Student Dashboard</a>
+        <a href="{{ url_for('admin_login') }}">Admin Login</a>
+        <a href="{{ url_for('company_insights') }}">Company Insights</a>
+    </div>
+</nav>
+
+<main class="container dashboard-page">
+
+    <section class="hero dashboard-hero">
+        <span class="eyebrow">YOUR JOB SEARCH OVERVIEW</span>
+
+        <h1>
+            Student <span class="gradient-text">Dashboard</span>
+        </h1>
+
+        <p class="subtitle">
+            Track your job scans, revisit saved opportunities,
+            and monitor community reports in one place.
+        </p>
+
+        <a class="dashboard-scan-link" href="{{ url_for('home') }}">
+            + Analyze a New Job
+        </a>
+    </section>
+
+    <!-- KPI cards -->
+    <section class="dashboard-kpis" aria-label="Job search statistics">
+
+        <article class="feature-card dashboard-kpi">
+            <div class="kpi-top">
+                <span class="kpi-icon" aria-hidden="true">📊</span>
+                <span class="kpi-label">TOTAL ANALYSES</span>
+            </div>
+            <p class="dashboard-number">{{ total_analyses }}</p>
+            <p class="kpi-description">Job postings analyzed</p>
+        </article>
+
+        <article class="feature-card dashboard-kpi">
+            <div class="kpi-top">
+                <span class="kpi-icon" aria-hidden="true">⚠️</span>
+                <span class="kpi-label">FLAGGED POSTINGS</span>
+            </div>
+            <p class="dashboard-number">{{ flagged_count }}</p>
+            <p class="kpi-description">Classified as potentially fraudulent</p>
+        </article>
+
+        <article class="feature-card dashboard-kpi">
+            <div class="kpi-top">
+                <span class="kpi-icon" aria-hidden="true">🔖</span>
+                <span class="kpi-label">SAVED JOBS</span>
+            </div>
+            <p class="dashboard-number">{{ saved_jobs|length }}</p>
+            <p class="kpi-description">Opportunities saved for later</p>
+        </article>
+
+    </section>
+
+    <!-- Charts -->
+    <section class="dashboard-section">
+        <div class="dashboard-section-heading">
+            <span class="eyebrow">ANALYTICS</span>
+            <h2>Your Job Analysis Trends</h2>
+            <p>Explore the classifications and activity recorded by JobSentry.</p>
+        </div>
+
+        <div class="dashboard-chart-grid">
+
+            <article class="scanner-card dashboard-chart-card">
+                <h3>Fraud Risk Distribution</h3>
+                <p class="helper">
+                    Model classifications across analyzed postings.
+                </p>
+                <div class="dashboard-chart-wrap">
+                    <canvas id="riskChart"></canvas>
+                </div>
+            </article>
+
+            <article class="scanner-card dashboard-chart-card">
+                <h3>Analysis Activity</h3>
+                <p class="helper">
+                    Postings analyzed during the last seven days.
+                </p>
+                <div class="dashboard-chart-wrap">
+                    <canvas id="activityChart"></canvas>
+                </div>
+            </article>
+
+        </div>
+    </section>
+
+    <!-- Recent analysis history -->
+    <section class="scanner-card dashboard-list-section">
+        <div class="dashboard-section-heading">
+            <span class="eyebrow">YOUR ACTIVITY</span>
+            <h2>Recent Analysis History</h2>
+            <p>Review the results of your previously analyzed job postings.</p>
+        </div>
+
+        {% if history %}
+            <div class="dashboard-record-list">
+                {% for item in history %}
+                <article class="explanation-panel dashboard-record">
+                    <div class="record-heading">
+                        <h3>{{ item.job_title or "Job posting" }}</h3>
+                        <span class="record-score">
+                            {{ item.risk_score }}%
+                        </span>
+                    </div>
+
+                    <p>
+                        <strong>Classification:</strong>
+                        {{ item.classification }}
+                    </p>
+
+                    <p class="helper">
+                        Fraud-class model score · {{ item.created_at }}
+                    </p>
+                </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="dashboard-empty-state">
+                <span aria-hidden="true">🔎</span>
+                <h3>No analyses yet</h3>
+                <p>Analyze a job posting to see your results here.</p>
+                <a class="dashboard-scan-link" href="{{ url_for('home') }}">
+                    Analyze a Job
+                </a>
+            </div>
+        {% endif %}
+    </section>
+
+    <!-- Saved jobs -->
+    <section class="scanner-card dashboard-list-section">
+        <div class="dashboard-section-heading">
+            <span class="eyebrow">BOOKMARKS</span>
+            <h2>Saved Jobs</h2>
+            <p>Keep track of opportunities you want to revisit.</p>
+        </div>
+
+        {% if saved_jobs %}
+            <div class="dashboard-record-list">
+                {% for job in saved_jobs %}
+                <article class="explanation-panel dashboard-record">
+                    <h3>{{ job.job_title or "Saved job" }}</h3>
+
+                    {% if job.company_name %}
+                        <p class="saved-company">{{ job.company_name }}</p>
+                    {% endif %}
+
+                    {% if job.job_description %}
+                        <p class="saved-description">{{ job.job_description }}</p>
+                    {% endif %}
+
+                    <p class="helper">Saved {{ job.created_at }}</p>
+                </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="dashboard-empty-state">
+                <span aria-hidden="true">🔖</span>
+                <h3>No saved jobs yet</h3>
+                <p>Analyze a posting and use Save This Job to keep it here.</p>
+            </div>
+        {% endif %}
+    </section>
+
+    <!-- Community reports -->
+    <section class="scanner-card dashboard-list-section">
+        <div class="dashboard-section-heading">
+            <span class="eyebrow">COMMUNITY PROTECTION</span>
+            <h2>Community Fraud Reports</h2>
+            <p>
+                An overview of submitted reports. These numbers do not
+                represent confirmed fraud cases.
+            </p>
+        </div>
+
+        <div class="report-stat-grid">
+            <article class="feature-card report-stat-card">
+                <span class="kpi-icon" aria-hidden="true">📨</span>
+                <h3>Reports Submitted</h3>
+                <p class="dashboard-number">{{ report_count }}</p>
+            </article>
+
+            <article class="feature-card report-stat-card">
+                <span class="kpi-icon" aria-hidden="true">🕒</span>
+                <h3>Awaiting Review</h3>
+                <p class="dashboard-number">{{ pending_reports }}</p>
+            </article>
+        </div>
+
+        <a class="dashboard-secondary-link"
+           href="{{ url_for('report_job') }}">
+            Report a Suspicious Job &rarr;
+        </a>
+    </section>
+
+</main>
+
+<footer>
+    JobSentry &copy; 2026 · Make informed decisions. Search safely.
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script id="dashboard-chart-data" type="application/json">
+{
+    "riskLabels": {{ risk_labels | tojson }},
+    "riskValues": {{ risk_values | tojson }},
+    "activityLabels": {{ activity_labels | tojson }},
+    "activityValues": {{ activity_values | tojson }}
+}
+</script>
+
+<script>
+(() => {
+    const dataElement = document.getElementById("dashboard-chart-data");
+    const riskCanvas = document.getElementById("riskChart");
+    const activityCanvas = document.getElementById("activityChart");
+
+    if (!dataElement || !riskCanvas || !activityCanvas) {
+        return;
+    }
+
+    const chartData = JSON.parse(dataElement.textContent);
+
+    if (typeof Chart === "undefined") {
+        console.error("Chart.js could not be loaded.");
+        return;
+    }
+
+    new Chart(riskCanvas, {
+        type: "doughnut",
+        data: {
+            labels: chartData.riskLabels,
+            datasets: [{
+                data: chartData.riskValues,
+                backgroundColor: ["#fb7185", "#2dd4bf"],
+                borderColor: "#101e30",
+                borderWidth: 4,
+                hoverOffset: 7
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: "68%",
+            plugins: {
+                legend: {
+                    position: "bottom",
+                    labels: {
+                        color: "#e2e8f0",
+                        padding: 20,
+                        usePointStyle: true
+                    }
+                }
+            }
+        }
+    });
+
+    new Chart(activityCanvas, {
+        type: "line",
+        data: {
+            labels: chartData.activityLabels,
+            datasets: [{
+                label: "Jobs analyzed",
+                data: chartData.activityValues,
+                borderColor: "#38bdf8",
+                backgroundColor: "rgba(56, 189, 248, 0.12)",
+                pointBackgroundColor: "#2dd4bf",
+                pointBorderColor: "#101e30",
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                fill: true,
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                intersect: false,
+                mode: "index"
+            },
+            scales: {
+                x: {
+                    ticks: {
+                        color: "#cbd5e1"
+                    },
+                    grid: {
+                        display: false
+                    },
+                    border: {
+                        color: "rgba(148, 163, 184, 0.18)"
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: "#cbd5e1",
+                        precision: 0
+                    },
+                    grid: {
+                        color: "rgba(148, 163, 184, 0.10)"
+                    },
+                    border: {
+                        display: false
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: {
+                        color: "#e2e8f0",
+                        usePointStyle: true
+                    }
+                }
+            }
+        }
+    });
+})();
+</script>
+
+</body>
+</html>

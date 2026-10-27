@@ -1,0 +1,173 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#07111f">
+
+    <title>Report a Job | JobSentry</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+<nav class="main-nav">
+    <a class="nav-brand" href="{{ url_for('home') }}">
+        <span class="brand-icon" aria-hidden="true">🛡</span>
+        <span class="brand-text">
+            <span class="brand-name">JobSentry</span>
+            <span class="brand-tagline">Spot Job Scams. Apply with Confidence.</span>
+        </span>
+    </a>
+
+    <div class="nav-links">
+        <a href="{{ url_for('home') }}">Home</a>
+        <a href="{{ url_for('reviews') }}">Company Reviews</a>
+        <a href="{{ url_for('report_job') }}" aria-current="page">Report a Job</a>
+        <a href="{{ url_for('dashboard') }}">Student Dashboard</a>
+        <a href="{{ url_for('admin_login') }}">Admin Login</a>
+        <a href="{{ url_for('company_insights') }}">Company Insights</a>
+    </div>
+</nav>
+
+<main class="container report-page">
+
+    <section class="hero">
+        <span class="eyebrow">COMMUNITY PROTECTION</span>
+
+        <h1>
+            Report a
+            <span class="gradient-text">Suspicious Job</span>
+        </h1>
+
+        <p class="subtitle">
+            Help protect students by reporting job postings that
+            request money, misuse personal information, or appear misleading.
+        </p>
+    </section>
+
+    <section class="report-info">
+        <div class="report-info-icon" aria-hidden="true">🛡️</div>
+        <div>
+            <h2>Help keep job seekers safe</h2>
+            <p>
+                Reports are reviewed before any action is taken.
+                Please provide accurate details and avoid including
+                passwords, bank account numbers, or other sensitive data.
+            </p>
+        </div>
+    </section>
+
+    {% if message %}
+    <div class="safety-note" role="status">
+        <p>{{ message }}</p>
+    </div>
+    {% endif %}
+
+    <section class="scanner-card report-form-card">
+
+        <div class="section-heading">
+            <span class="section-icon" aria-hidden="true">📋</span>
+            <div>
+                <h2>Submit a Community Report</h2>
+                <p class="helper">
+                    Fields marked with * are required.
+                </p>
+            </div>
+        </div>
+
+        <form method="POST" action="{{ url_for('report_job') }}">
+
+            <div class="form-field">
+                <label for="job_title">Job title *</label>
+                <input
+                    type="text"
+                    id="job_title"
+                    name="job_title"
+                    maxlength="150"
+                    required
+                    placeholder="e.g. Remote Data Entry Operator"
+                >
+            </div>
+
+            <div class="form-field">
+                <label for="company_name">Company name</label>
+                <input
+                    type="text"
+                    id="company_name"
+                    name="company_name"
+                    maxlength="120"
+                    placeholder="Company name, if known"
+                >
+            </div>
+
+            <div class="form-field">
+                <label for="job_url">Job posting URL</label>
+                <input
+                    type="url"
+                    id="job_url"
+                    name="job_url"
+                    maxlength="1000"
+                    placeholder="https://example.com/job"
+                >
+                <p class="helper">
+                    Add the original listing link if it is available.
+                </p>
+            </div>
+
+            <div class="form-field">
+                <label for="reason">Reason for reporting *</label>
+                <select id="reason" name="reason" required>
+                    <option value="">Select a reason</option>
+                    <option value="Upfront payment request">
+                        Requests upfront payment
+                    </option>
+                    <option value="Suspicious salary claims">
+                        Suspicious salary claims
+                    </option>
+                    <option value="Fake company or recruiter">
+                        Possibly fake company or recruiter
+                    </option>
+                    <option value="Personal or financial information">
+                        Requests sensitive information
+                    </option>
+                    <option value="Misleading job description">
+                        Misleading job description
+                    </option>
+                    <option value="Other concern">
+                        Other concern
+                    </option>
+                </select>
+            </div>
+
+            <div class="form-field">
+                <label for="details">Additional details *</label>
+                <textarea
+                    id="details"
+                    name="details"
+                    minlength="10"
+                    maxlength="2000"
+                    required
+                    placeholder="Explain what made the posting suspicious..."
+                ></textarea>
+                <p class="helper">
+                    Include relevant facts, messages, or requests made by
+                    the recruiter. Do not include private credentials.
+                </p>
+            </div>
+
+            <button type="submit">Submit Community Report &rarr;</button>
+        </form>
+    </section>
+
+</main>
+
+<footer>
+    JobSentry &copy; 2026 · Make informed decisions. Search safely.
+</footer>
+
+</body>
+</html>

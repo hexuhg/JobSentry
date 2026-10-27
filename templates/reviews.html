@@ -1,0 +1,200 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#07111f">
+
+    <title>Company Reviews | JobSentry</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+<nav class="main-nav">
+    <a class="nav-brand" href="{{ url_for('home') }}">
+        <span class="brand-icon" aria-hidden="true">🛡</span>
+        <span class="brand-text">
+            <span class="brand-name">JobSentry</span>
+            <span class="brand-tagline">Spot Job Scams. Apply with Confidence.</span>
+        </span>
+    </a>
+
+    <div class="nav-links">
+        <a href="{{ url_for('home') }}">Home</a>
+        <a href="{{ url_for('reviews') }}" aria-current="page">Company Reviews</a>
+        <a href="{{ url_for('report_job') }}">Report a Job</a>
+        <a href="{{ url_for('dashboard') }}">Student Dashboard</a>
+        <a href="{{ url_for('admin_login') }}">Admin Login</a>
+        <a href="{{ url_for('company_insights') }}">Company Insights</a>
+    </div>
+</nav>
+
+<main class="container reviews-page">
+
+    <section class="hero">
+        <span class="eyebrow">COMMUNITY INSIGHTS</span>
+
+        <h1>
+            Company Reviews
+            <span class="gradient-text">&amp; Ratings</span>
+        </h1>
+
+        <p class="subtitle">
+            Share workplace experiences and help students make
+            informed decisions before applying for a job.
+        </p>
+    </section>
+
+    {% if message %}
+    <div class="safety-note" role="status">
+        <p>{{ message }}</p>
+    </div>
+    {% endif %}
+
+    <section class="scanner-card review-form-card">
+        <div class="section-heading">
+            <span class="section-icon" aria-hidden="true">✍️</span>
+            <div>
+                <h2>Write a Company Review</h2>
+                <p class="helper">
+                    Your review will be checked by an administrator
+                    before it appears publicly.
+                </p>
+            </div>
+        </div>
+
+        <form method="POST" action="{{ url_for('reviews') }}">
+
+            <div class="form-field">
+                <label for="company_name">Company name</label>
+                <input
+                    type="text"
+                    id="company_name"
+                    name="company_name"
+                    maxlength="120"
+                    required
+                    placeholder="e.g. Example Technologies"
+                >
+            </div>
+
+            <div class="form-field">
+                <label for="rating">Your rating</label>
+                <select id="rating" name="rating" required>
+                    <option value="">Select a rating</option>
+                    <option value="5">★★★★★ — Excellent</option>
+                    <option value="4">★★★★☆ — Good</option>
+                    <option value="3">★★★☆☆ — Average</option>
+                    <option value="2">★★☆☆☆ — Poor</option>
+                    <option value="1">★☆☆☆☆ — Very poor</option>
+                </select>
+            </div>
+
+            <div class="form-field">
+                <label for="review">Your review</label>
+                <textarea
+                    id="review"
+                    name="review"
+                    minlength="10"
+                    maxlength="2000"
+                    required
+                    placeholder="Describe your experience with this company..."
+                ></textarea>
+                <p class="helper">
+                    Keep your review factual and avoid sharing
+                    private or sensitive personal information.
+                </p>
+            </div>
+
+            <button type="submit">Submit Review &rarr;</button>
+        </form>
+    </section>
+
+    <section class="published-reviews">
+        <div class="section-heading">
+            <span class="section-icon" aria-hidden="true">⭐</span>
+            <div>
+                <h2>Published Company Reviews</h2>
+                <p class="helper">
+                    Reviews approved for public viewing.
+                </p>
+            </div>
+        </div>
+
+<form class="company-search-form" method="GET"
+      action="{{ url_for('reviews') }}">
+    <label for="company-search">Find company reviews</label>
+
+    <div class="company-search-row">
+        <input
+            id="company-search"
+            type="search"
+            name="company"
+            placeholder="Enter a company name..."
+            value="{{ search_query }}"
+            maxlength="120"
+        >
+
+        <button type="submit">Search</button>
+
+        {% if search_query %}
+        <a class="company-search-clear"
+           href="{{ url_for('reviews') }}">
+            Clear
+        </a>
+        {% endif %}
+    </div>
+</form>
+
+
+        {% if reviews %}
+        <div class="review-list">
+            
+            {% for item in reviews %}
+            <article class="scanner-card review-card">
+
+                <div class="review-card-heading">
+                    <div>
+                        <h3>{{ item.company_name }}</h3>
+                        <p class="review-date">
+                            Posted {{ item.created_at }}
+                        </p>
+                    </div>
+
+                    <span class="rating-badge">
+                        {{ item.rating }}/5
+                    </span>
+                </div>
+
+                <p class="review-stars" aria-label="{{ item.rating }} out of 5 stars">
+                    {{ "★" * item.rating }}{{ "☆" * (5 - item.rating) }}
+                </p>
+
+                <p class="review-content">{{ item.review }}</p>
+
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="scanner-card empty-reviews">
+            <span class="empty-icon" aria-hidden="true">💬</span>
+            <h3>No published reviews yet</h3>
+            <p>
+                Be the first to share your experience and help
+                other students make informed decisions.
+            </p>
+        </div>
+        {% endif %}
+    </section>
+
+</main>
+
+<footer>
+    JobSentry &copy; 2026 · Make informed decisions. Search safely.
+</footer>
+
+</body>
+</html>

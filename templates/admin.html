@@ -1,0 +1,238 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Moderation | JobSentry</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <nav class="main-nav">
+        <a class="nav-brand" href="{{ url_for('home') }}">
+            <span class="brand-icon" aria-hidden="true">🛡</span>
+            <span class="brand-text">
+                <span class="brand-name">JobSentry</span>
+                <span class="brand-tagline">Spot Job Scams. Apply with Confidence.</span>
+            </span>
+        </a>
+
+        <div class="nav-links">
+            <a href="{{ url_for('home') }}">Home</a>
+            <a href="{{ url_for('reviews') }}">Company Reviews</a>
+            <a href="{{ url_for('report_job') }}">Report a Job</a>
+            <a href="{{ url_for('dashboard') }}">Student Dashboard</a>
+            <a href="{{ url_for('company_insights') }}">Company Insights</a>
+
+            <form class="admin-logout-form"
+                  action="{{ url_for('admin_logout') }}"
+                  method="POST">
+                <button class="admin-logout-btn" type="submit">
+                    Logout
+                </button>
+            </form>
+        </div>
+    </nav>
+
+    <main class="container admin-page">
+
+        <section class="hero admin-hero">
+            <span class="eyebrow">ADMINISTRATION</span>
+            <h1>Content <span class="gradient-text">Moderation</span></h1>
+            <p>
+                Review community submissions and help keep JobSentry
+                reliable for students.
+            </p>
+        </section>
+
+        {% if message %}
+        <div class="explanation-panel admin-message" role="status">
+            {{ message }}
+        </div>
+        {% endif %}
+
+        <section class="scanner-card admin-section">
+            <div class="admin-section-heading">
+                <div>
+                    <span class="admin-section-label">REVIEW QUEUE</span>
+                    <h2>Pending Company Reviews</h2>
+                    <p>Check user feedback before publishing it.</p>
+                </div>
+                <span class="admin-count">{{ reviews|length }}</span>
+            </div>
+
+            {% if reviews %}
+                <div class="admin-item-list">
+                    {% for item in reviews %}
+                    <article class="admin-item">
+                        <div class="admin-item-top">
+                            <div>
+                                <h3>{{ item.company_name }}</h3>
+                                <p class="admin-item-meta">
+                                    Submitted: {{ item.created_at }}
+                                </p>
+                            </div>
+                            <span class="admin-rating">
+                                ★ {{ item.rating }}/5
+                            </span>
+                        </div>
+
+                        <div class="admin-item-content">
+                            {{ item.review }}
+                        </div>
+
+                        <form class="admin-actions" method="POST"
+                              action="{{ url_for('moderate_review', review_id=item.id) }}">
+                            <button class="admin-action-btn approve-btn"
+                                    name="action" value="approved" type="submit">
+                                Approve Review
+                            </button>
+                            <button class="admin-action-btn reject-btn"
+                                    name="action" value="rejected" type="submit">
+                                Reject Review
+                            </button>
+                        </form>
+                    </article>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="admin-empty-state">
+                    <span class="admin-empty-icon">✓</span>
+                    <h3>All caught up</h3>
+                    <p>There are no pending company reviews.</p>
+                </div>
+            {% endif %}
+        </section>
+
+        <section class="scanner-card admin-section">
+            <div class="admin-section-heading">
+                <div>
+                    <span class="admin-section-label">SAFETY REPORTS</span>
+                    <h2>Pending Community Reports</h2>
+                    <p>Investigate suspicious job postings reported by students.</p>
+                </div>
+                <span class="admin-count">{{ reports|length }}</span>
+            </div>
+
+            {% if reports %}
+                <div class="admin-item-list">
+                    {% for item in reports %}
+                    <article class="admin-item">
+                        <div class="admin-item-top">
+                            <div>
+                                <h3>{{ item.job_title }}</h3>
+                                <p class="admin-item-meta">
+                                    Company: {{ item.company_name or "Not provided" }}
+                                </p>
+                            </div>
+                            <span class="admin-pending-tag">Pending</span>
+                        </div>
+
+                        <p class="admin-reason">
+                            <strong>Reported reason:</strong> {{ item.reason }}
+                        </p>
+
+                        {% if item.details %}
+                        <div class="admin-item-content">
+                            {{ item.details }}
+                        </div>
+                        {% endif %}
+
+                        {% if item.job_url %}
+                        <p class="admin-job-link">
+                            <a href="{{ item.job_url }}"
+                               target="_blank"
+                               rel="noopener noreferrer">
+                                View reported job link ↗
+                            </a>
+                        </p>
+                        {% endif %}
+
+                        <form class="admin-actions" method="POST"
+                              action="{{ url_for('moderate_report', report_id=item.id) }}">
+                            <button class="admin-action-btn reviewed-btn"
+                                    name="action" value="reviewed" type="submit">
+                                Mark as Reviewed
+                            </button>
+                        </form>
+                    </article>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="admin-empty-state">
+                    <span class="admin-empty-icon">✓</span>
+                    <h3>No pending reports</h3>
+                    <p>There are no community reports awaiting review.</p>
+                </div>
+            {% endif %}
+        </section>
+
+        <footer class="admin-footer">
+            JobSentry Admin Panel · Review submissions responsibly.
+        </footer>
+
+        <!-- Reviewed Reports History -->
+        <section class="scanner-card admin-section">
+            <div class="admin-section-heading">
+                <div>
+                    <span class="admin-section-label">REPORT HISTORY</span>
+                    <h2>Reviewed Community Reports</h2>
+                    <p>Previously reviewed reports remain available here.</p>
+                </div>
+                <span class="admin-count">{{ reviewed_reports|length }}</span>
+            </div>
+
+            {% if reviewed_reports %}
+                <div class="admin-item-list">
+                    {% for item in reviewed_reports %}
+                    <article class="admin-item">
+                        <div class="admin-item-top">
+                            <div>
+                                <h3>{{ item.job_title }}</h3>
+                                <p class="admin-item-meta">
+                                    Company: {{ item.company_name or "Not provided" }}
+                                </p>
+                                <p class="admin-item-meta">
+                                    Submitted: {{ item.created_at }}
+                                </p>
+                            </div>
+                            <span class="admin-reviewed-tag">Reviewed</span>
+                        </div>
+
+                        <p class="admin-reason">
+                            <strong>Reported reason:</strong> {{ item.reason }}
+                        </p>
+
+                        {% if item.details %}
+                        <div class="admin-item-content">
+                            {{ item.details }}
+                        </div>
+                        {% endif %}
+
+                        {% if item.job_url %}
+                        <p class="admin-job-link">
+                            <a href="{{ item.job_url }}"
+                               target="_blank"
+                               rel="noopener noreferrer">
+                                View reported job link ↗
+                            </a>
+                        </p>
+                        {% endif %}
+                    </article>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="admin-empty-state">
+                    <span class="admin-empty-icon">✓</span>
+                    <h3>No reviewed reports yet</h3>
+                    <p>Reports will appear here after you mark them as reviewed.</p>
+                </div>
+            {% endif %}
+        </section>
+
+    </main>
+
+</body>
+</html>
+

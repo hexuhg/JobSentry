@@ -1,0 +1,16 @@
+
+# Admin secrets
+admin_config.py
+
+# Python environment and cache
+.venv/
+__pycache__/
+*.pyc
+
+# Local database
+jobsentry.db
+
+# Environment variables
+.env
+password
+*.pyc
